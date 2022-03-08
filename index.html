@@ -15,14 +15,18 @@
         </style>
     </head>
     <body>
-        <input type="text" name="" id='playlisturl' placeholder="youtube playlist URL">
-        <button onclick="submit()">Submit</button>
+        <form id='formy'>
+            <input type="text" name="" id='playlisturl' placeholder="youtube playlist URL">
+            <!-- <button onclick="submit()">Submit</button> -->
+        </form>
         <pre id='output'></pre>
     </body>
     <script>
-        function submit() {
+        document.getElementById('formy').addEventListener('submit', (event) => {
             send_dancable_request(document.getElementById('playlisturl').value);
-        }
+            event.preventDefault();
+        });
+
         function send_dancable_request(requst_body) {
             print = (text) => document.getElementById('output').innerText += (''+text).trimEnd() + '\n';
             let socket;
@@ -73,10 +77,7 @@
                     reason = "Unknown reason";
                 print('websocket closed: ' + reason);
             });
-            socket.addEventListener('error', function (event) {
-                // print(JSON.stringify(event))
-            });
         }
-        send_dancable_request('https://www.youtube.com/playlist?list=PLgdtUalkXBkQlMy0Achu9PMESeOkUcEEd');
+        // send_dancable_request('https://www.youtube.com/playlist?list=PL65Y47aS765hqwTNtN7jEJf-yLmZXn04R');
 </script>
 </html>

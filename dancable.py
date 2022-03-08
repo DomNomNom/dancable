@@ -24,7 +24,14 @@ work_dir = Path() / "cache"
 if not work_dir.exists():
     work_dir.mkdir()
 
-
+# # https://stackoverflow.com/questions/14630288/unicodeencodeerror-charmap-codec-cant-encode-character-maps-to-undefined
+import sys
+# import codecs
+# if sys.stdout.encoding != 'cp850':
+#     print('aaaaasfasfasf', sys.stdout.encoding)
+#     sys.stdout = codecs.getwriter('cp850')(sys.stdout.buffer, 'strict')
+# if sys.stderr.encoding != 'cp850':
+#     sys.stderr = codecs.getwriter('cp850')(sys.stderr.buffer, 'strict')
 
 class LastMessageLogger:
     def __init__(self):
@@ -44,26 +51,24 @@ class LastMessageLogger:
         print(msg)
 
 class ShitLogger:
-    def __init__(self, print):
-        self.print = print
 
     def debug(self, msg):
-        self.print(msg)
+        print(msg)
 
     def warning(self, msg):
-        self.print(msg)
+        print(msg)
 
     def error(self, msg):
-        self.print(msg)
+        print(msg)
 
 
 
-announcements = {
-    '2uX-VZb7rvA',  # Solo notice 1
-    'vsQb882KVSo',  # Solo notice 2
-    'dIXivJkO7fE',  # Solo notice 3
-    'E-ZR65NMJII',  # Soul Warz
-    'wkhngBqmuZY',  # Halftime Notice
+specials = {
+    '2uX-VZb7rvA': 'solo',  # Solo notice 1
+    'vsQb882KVSo': 'solo',  # Solo notice 2
+    'dIXivJkO7fE': 'solo',  # Solo notice 3
+    'E-ZR65NMJII': 'solo',  # Soul Warz
+    'wkhngBqmuZY': 'halftime',  # Halftime Notice
 }
 
 def detect_fake_ends(sound: AudioSegment) -> Iterable[int]:
@@ -92,7 +97,7 @@ def detect_fake_ends(sound: AudioSegment) -> Iterable[int]:
 def format_timestamp(seconds: float) -> str:
     return f'{seconds//60}:{int(seconds)%60:02d}'
 
-def dancable(playlist_url, print=print):
+def dancable(playlist_url):
     playlist_logger = LastMessageLogger()
     ydl_opts = {
         'logger': playlist_logger,
@@ -130,7 +135,7 @@ def dancable(playlist_url, print=print):
         'outtmpl': str(work_dir / '%(id)s.%(ext)s'),
         # 'nooverwrites': True,
         'noprogress': True,
-        'logger': ShitLogger(print=print),
+        'logger': ShitLogger(),
         'progress_hooks': [progress_hook],
     }
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
@@ -146,21 +151,21 @@ def dancable(playlist_url, print=print):
     # Find things to complain about
     total_duration_s = 0
     for i, v in enumerate(ids):
-        if v in announcements or i==0:
+        if v in specials or i==0:
             print()
-        print(f'{i+1:02d} {entries[i]["title"]}')
+        print(f"{i+1:02d} {entries[i]['title'].encode(sys.stdout.encoding, errors='replace').decode()}")
 
         mp3_file = work_dir / f'{v}.mp3'
         sound = AudioSegment.from_mp3(mp3_file)
         duration_s = len(sound) // 1000
         total_duration_s += duration_s
-        if v in announcements:
+        if v in specials:
             continue
 
         if duration_s < MIN_SONG_DURATION_S:
-            print(f'    song too short. recommended more than {format_timestamp(MIN_SONG_DURATION_S)}. duration is {format_timestamp(duration_s)}')
-        if duration_s > MAX_SONG_DURATION_S:
-            print(f'    song too long. recommended less than {format_timestamp(MAX_SONG_DURATION_S)}. duration is {format_timestamp(duration_s)}')
+            print(f'    song too short. got {format_timestamp(duration_s)}, want >{format_timestamp(MIN_SONG_DURATION_S)}')
+        if duration_s > MAX_SONG_DURATION_S and (i == 0 or specials.get(ids[i-1]) == 'solo'):
+            print(f'    song too long. got {format_timestamp(duration_s)}, want <{format_timestamp(MAX_SONG_DURATION_S)}')
         fake_ends = detect_fake_ends(sound)
         for s in fake_ends:
             print(f'    fake end at {format_timestamp(s)}')
