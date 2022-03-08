@@ -117,7 +117,7 @@ def main():
     def progress_hook(d):
         if d.get('status') == 'downloading':
             download_ratio = d.get('downloaded_bytes', 0) / d.get('total_bytes', 1)
-            print(f"[download {i:02d}/{len(entries)}] {download_ratio*100:2.2f}% of {d.get('total_bytes', 0)/1000**2 : 2.2f}MB")
+            print(f"[download {i:02d}/{len(entries)}] {download_ratio*100:02.2f}% of {d.get('total_bytes', 0)/1000**2 :.1f}MB")
         elif d.get('status') == 'finished':
             pass
         else:
@@ -133,7 +133,7 @@ def main():
         'outtmpl': str(work_dir / '%(id)s.%(ext)s'),
         # 'nooverwrites': True,
         'noprogress': True,
-        'logger': ShitLogger(),
+        'logger': ShitLogger(print=print),
         'progress_hooks': [progress_hook],
     }
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
