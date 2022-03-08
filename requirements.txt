@@ -1,0 +1,5 @@
+websockets
+pprint
+youtube_dl
+pydub
+numpy

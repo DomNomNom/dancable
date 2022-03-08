@@ -6,13 +6,13 @@ Usage:
 from __future__ import unicode_literals
 from pathlib import Path
 import json
+from typing import Iterable
 
 from pprint import pprint
 from docopt import docopt
 import youtube_dl
 from pydub import AudioSegment
 import numpy as np
-from typing import Iterable
 
 THRESHOLD_RMS = .05
 MIN_SONG_DURATION_S = 2*60
@@ -92,10 +92,7 @@ def detect_fake_ends(sound: AudioSegment) -> Iterable[int]:
 def format_timestamp(seconds: float) -> str:
     return f'{seconds//60}:{int(seconds)%60:02d}'
 
-
-def main():
-    arguments = docopt(__doc__)
-
+def dancable(playlist_url, print=print):
     playlist_logger = LastMessageLogger()
     ydl_opts = {
         'logger': playlist_logger,
@@ -103,11 +100,11 @@ def main():
         'dump_single_json': 'yes',
     }
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        out = ydl.download([arguments['<playlist_url>']])
+        out = ydl.download([playlist_url])
         assert out == 0
         assert playlist_logger.last_error is None
     playlist_info = json.loads(playlist_logger.last_debug)
-    print('playlist metadata downloaded')
+    print('playlist metadata downloaded.')
 
     entries = playlist_info['entries']
     ids = [e['id'] for e in entries]
@@ -144,13 +141,14 @@ def main():
             out = ydl.download([f'https://www.youtube.com/watch?v={v}'])
             assert out == 0
             assert mp3_file.exists()
+    print('playlist downloaded.')
 
     # Find things to complain about
     total_duration_s = 0
     for i, v in enumerate(ids):
         if v in announcements or i==0:
             print()
-        print(f'{i+1:02d} {v}  {entries[i]["title"]}')
+        print(f'{i+1:02d} {entries[i]["title"]}')
 
         mp3_file = work_dir / f'{v}.mp3'
         sound = AudioSegment.from_mp3(mp3_file)
@@ -160,16 +158,19 @@ def main():
             continue
 
         if duration_s < MIN_SONG_DURATION_S:
-            print(f'    song too short. duration is {format_timestamp(duration_s)}. recommended more than {format_timestamp(MIN_SONG_DURATION_S)}')
+            print(f'    song too short. recommended more than {format_timestamp(MIN_SONG_DURATION_S)}. duration is {format_timestamp(duration_s)}')
         if duration_s > MAX_SONG_DURATION_S:
-            print(f'    song too long. duration is {format_timestamp(duration_s)}. receommended less than {format_timestamp(MAX_SONG_DURATION_S)}')
+            print(f'    song too long. recommended less than {format_timestamp(MAX_SONG_DURATION_S)}. duration is {format_timestamp(duration_s)}')
         fake_ends = detect_fake_ends(sound)
         for s in fake_ends:
             print(f'    fake end at {format_timestamp(s)}')
 
     print()
-    print(f'total playlist duration: {format_timestamp(s)}')
+    print(f'total playlist duration: {format_timestamp(total_duration_s)}')
 
+def main():
+    arguments = docopt(__doc__)
+    dancable(arguments['<playlist_url>'])
 
 if __name__ == '__main__':
     main()
