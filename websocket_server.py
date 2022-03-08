@@ -29,7 +29,7 @@ async def handler(websocket, path):
             print(line)
             await websocket.send(line)
 
-start_server = websockets.serve(handler, "0.0.0.0", PORT)
+start_server = websockets.serve(handler, "localhost", PORT)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 print(f'serving on port {PORT}...')
