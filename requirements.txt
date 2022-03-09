@@ -1,4 +1,4 @@
 websockets
-youtube_dl
+yt_dlp
 pydub
 numpy

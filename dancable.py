@@ -10,7 +10,7 @@ from typing import Iterable
 
 from pprint import pprint
 from docopt import docopt
-import youtube_dl
+from yt_dlp import YoutubeDL
 from pydub import AudioSegment
 import numpy as np
 
@@ -103,8 +103,9 @@ def dancable(playlist_url):
         'logger': playlist_logger,
         'extract_flat': True,
         'dump_single_json': 'yes',
+        'source_address': '0.0.0.0',
     }
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+    with YoutubeDL(ydl_opts) as ydl:
         out = ydl.download([playlist_url])
         assert out == 0
         assert playlist_logger.last_error is None
@@ -137,8 +138,9 @@ def dancable(playlist_url):
         'noprogress': True,
         'logger': ShitLogger(),
         'progress_hooks': [progress_hook],
+        'source_address': '0.0.0.0',
     }
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+    with YoutubeDL(ydl_opts) as ydl:
         for i, v in enumerate(ids):
             mp3_file = work_dir / f'{v}.mp3'
             if mp3_file.exists():
@@ -178,4 +180,4 @@ def main():
     dancable(arguments['<playlist_url>'])
 
 if __name__ == '__main__':
-    main()
+    main(
