@@ -39,7 +39,7 @@
             try {
                 url = `ws://localhost:8444`
                 if (document.location.hostname == 'domnomnom.com') {
-                    url = 'ws://domnomnom.com/dancable/ws/';
+                    url = 'wss://domnomnom.com/dancable/ws/';
                 }
                 socket = new WebSocket(url);
             } catch (e) {
