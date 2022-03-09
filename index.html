@@ -31,7 +31,11 @@
             print = (text) => document.getElementById('output').innerText += (''+text).trimEnd() + '\n';
             let socket;
             try {
-                socket = new WebSocket(`ws://${''+document.location.hostname}:8444`);
+                url = `ws://localhost:8444`
+                if (document.location.hostname == 'domnomnom.com') {
+                    url = 'ws://domnomnom.com/dancable/ws/';
+                }
+                socket = new WebSocket(url);
             } catch (e) {
                 print(e);
                 return;
