@@ -27,8 +27,14 @@
             event.preventDefault();
         });
 
+        function print(text){
+            const is_at_bottom = ((window.innerHeight + window.scrollY) >= document.body.offsetHeight);
+            document.getElementById('output').innerText += (''+text).trimEnd() + '\n';
+            if (is_at_bottom) {
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        }
         function send_dancable_request(requst_body) {
-            print = (text) => document.getElementById('output').innerText += (''+text).trimEnd() + '\n';
             let socket;
             try {
                 url = `ws://localhost:8444`
