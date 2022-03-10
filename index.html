@@ -36,6 +36,7 @@
         }
         function send_dancable_request(requst_body) {
             let socket;
+            print('connecting...')
             try {
                 url = `ws://localhost:8444`
                 if (document.location.hostname == 'domnomnom.com') {

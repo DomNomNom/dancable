@@ -19,15 +19,20 @@ async def handler(websocket, path):
         await websocket.send(f'Error: URL must start with {prefix!r}')
         return
 
-    with subprocess.Popen([sys.executable, '-u', 'dancable.py', url],
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.STDOUT,
-                          bufsize=1,
-                          universal_newlines=True) as process:
-        for line in process.stdout:
-            line = line.rstrip()
-            print(line)
-            await websocket.send(line)
+    process = await asyncio.create_subprocess_exec(
+        sys.executable,
+        '-u',
+        'dancable.py',
+        url,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        # bufsize=1,
+        # universal_newlines=True
+    )
+    async for line in process.stdout:
+        line = line.decode().rstrip()
+        print(line)
+        await websocket.send(line)
 
 start_server = websockets.serve(handler, "localhost", PORT)
 
